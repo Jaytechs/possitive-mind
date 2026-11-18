@@ -4,18 +4,37 @@ import { useApp } from '../../hooks/useApp'
 import { Chips, Confirm, PageHead, TextArea } from '../../components/common/ui'
 import { exportJournal } from '../../services/export/export'
 import { askPermission, notificationsSupported, permission } from '../../services/notifications/notify'
+import { usePwaStatus } from '../../services/pwa'
 import type { ReminderSlot } from '../../types'
 
 interface BIPEvent extends Event { prompt: () => Promise<void> }
 let deferred: BIPEvent | null = null
-if (typeof window !== 'undefined') window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e as BIPEvent })
+if (typeof window !== 'undefined') window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault()
+  deferred = e as BIPEvent
+  window.dispatchEvent(new Event('pm:install-available'))
+})
 
 export function Settings() {
   const { prefs, setPrefs, notif, setNotif, entries, wipe, toast } = useApp()
+  const { offlineReady } = usePwaStatus()
   const [perm, setPerm] = useState(permission())
   const [ask, setAsk] = useState(false)
   const [canInstall, setCanInstall] = useState(!!deferred)
-  useEffect(() => { const f = () => setCanInstall(true); window.addEventListener('beforeinstallprompt', f); return () => window.removeEventListener('beforeinstallprompt', f) }, [])
+  const [isIos] = useState(() => {
+    const platform = navigator as Navigator & { standalone?: boolean }
+    return (/iPad|iPhone|iPod/.test(navigator.userAgent) || (platform.platform === 'MacIntel' && platform.maxTouchPoints > 1)) && !platform.standalone
+  })
+  useEffect(() => {
+    const installed = () => { deferred = null; setCanInstall(false) }
+    const installAvailable = () => setCanInstall(true)
+    window.addEventListener('pm:install-available', installAvailable)
+    window.addEventListener('appinstalled', installed)
+    return () => {
+      window.removeEventListener('pm:install-available', installAvailable)
+      window.removeEventListener('appinstalled', installed)
+    }
+  }, [])
   const slot = (k: 'morning' | 'day' | 'evening', label: string) => (
     <div className="slot" key={k}>
       <label className="check"><input type="checkbox" checked={notif[k].on} onChange={e => setNotif(n => ({ ...n, [k]: { ...n[k], on: e.target.checked } as ReminderSlot }))} /><span>{label}</span></label>
@@ -45,12 +64,17 @@ export function Settings() {
       <section className="block"><h2>Your data</h2>
         <p>Everything you write is stored only in this browser on this device, using IndexedDB. It is not sent anywhere and it is not encrypted by this app. Anyone who can unlock your device and browser could read it.</p>
         <div className="row wrap"><button className="btn ghost" onClick={() => { exportJournal(entries); toast('Export downloaded.') }}>Export my data (JSON)</button>
-          {canInstall && <button className="btn ghost" onClick={async () => { await deferred?.prompt(); deferred = null; setCanInstall(false) }}>Install app</button>}
+          {canInstall && <button className="btn ghost" onClick={async () => {
+            try { await deferred?.prompt(); deferred = null; setCanInstall(false) } catch { toast('Could not open the install prompt. Please try again.', 'err') }
+          }}>Install app</button>}
           <button className="btn danger" onClick={() => setAsk(true)}>Delete all my data</button></div>
+        {offlineReady ? <p className="muted" role="status">Available offline</p> : <p className="muted" role="status">Preparing offline access…</p>}
+        {isIos && <p className="muted">To install on iPhone or iPad, tap Share, then Add to Home Screen.</p>}
       </section>
       <section className="block"><h2>About</h2>
         <details><summary>Privacy</summary><p>No account, no analytics, no advertising trackers and no server. Your entries are private by default and cannot be shared from the app. Before any public release, the age range and applicable data-protection rules for your region should be reviewed.</p></details>
         <details><summary>Terms of use</summary><p>Positive Mind is a personal-development tool, not medical or psychological treatment. It cannot diagnose or treat any condition. If you are struggling, please speak to a trusted person or a qualified professional.</p></details>
+        <p><a href="./privacy.html">Read the privacy page</a> · <a href="./terms.html">Read the terms of use</a></p>
         <details><summary>About Positive Mind</summary><p>Inspired by general personal-development ideas, with original exercises and writing. It is not an official companion to any book or author.</p></details>
         <p className="muted">Version 1.0.0</p>
       </section>

@@ -1,10 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { registerSW } from 'virtual:pwa-register'
 import '@fontsource-variable/dm-sans'
 import '@fontsource-variable/lora'
 import './styles/app.css'
 import App from './App'
+import { registerServiceWorker } from './services/pwa'
 
-registerSW({ immediate: true })
+registerServiceWorker()
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)

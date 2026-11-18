@@ -12,6 +12,7 @@ import { Onboarding } from './pages/Onboarding/Onboarding'
 import { Challenge } from './pages/Challenge/Challenge'
 import { Evening } from './pages/Evening/Evening'
 import { showLocal } from './services/notifications/notify'
+import { applyPwaUpdate, usePwaStatus } from './services/pwa'
 import { dateKey, pad } from './utils/date'
 
 const MSG = {
@@ -21,9 +22,14 @@ const MSG = {
 } as const
 
 function Shell() {
-  const { ready, loadError, prefs, notif, toastMsg } = useApp()
+  const { ready, loadError, prefs, notif, toast, toastMsg } = useApp()
+  const { updateReady } = usePwaStatus()
   const route = useRoute()
   const [banner, setBanner] = useState<keyof typeof MSG | null>(null)
+
+  const refreshForUpdate = async () => {
+    try { await applyPwaUpdate() } catch { toast('Could not refresh the app. Please try again.', 'err') }
+  }
 
   useEffect(() => {
     const r = document.documentElement
@@ -53,6 +59,7 @@ function Shell() {
     <div className="shell">
       <a className="skip" href="#main">Skip to content</a>
       <Nav route={route} />
+      {updateReady && <div className="banner update-banner" role="status"><strong>A new version is ready.</strong><button className="btn ghost small" onClick={() => void refreshForUpdate()}>Refresh</button></div>}
       <main id="main" tabIndex={-1}>
         {loadError && <p className="safety" role="alert">Your saved entries could not be loaded. Your browser may be blocking storage, so new entries may not be saved.</p>}
         {banner && <div className="banner" role="status"><div><strong>{MSG[banner][0]}</strong><p>{MSG[banner][1]}</p></div><div className="row"><a className="btn small" href={`#${MSG[banner][2]}`} onClick={() => setBanner(null)}>Open</a><button className="btn ghost small" onClick={() => setBanner(null)}>Dismiss</button></div></div>}
