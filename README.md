@@ -40,7 +40,7 @@ Vercel provisions HTTPS for its deployment URL and connected domains. Confirm th
 ## Google Search Console
 
 1. In Search Console, add a **URL-prefix property** for `https://positivemindwithjonathan.vercel.app/`. A Domain property is an alternative, but requires DNS verification instead.
-2. For URL-prefix verification, copy the token from the HTML-tag method and replace `REPLACE_WITH_SEARCH_CONSOLE_VERIFICATION_TOKEN` in the `google-site-verification` meta tag in [`index.html`](./index.html). Deploy, then use Search Console's **Verify** action.
+2. Select the **HTML file** verification method. The provided file is [`public/googled15d505e0544c7ac.html`](./public/googled15d505e0544c7ac.html). Deploy it unchanged, confirm `https://positivemindwithjonathan.vercel.app/googled15d505e0544c7ac.html` is reachable, then use Search Console's **Verify** action. Do not rename or edit the file.
 3. Submit `https://positivemindwithjonathan.vercel.app/sitemap.xml` under **Sitemaps**.
 4. In **URL Inspection**, enter the root URL, run **Test live URL**, then choose **Request indexing**.
 

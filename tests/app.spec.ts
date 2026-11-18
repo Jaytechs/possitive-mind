@@ -32,7 +32,6 @@ test('serves crawlable fallback content, metadata, manifest, and legal pages', a
   expect(description).toBeTruthy()
   expect(await page.locator('meta[property="og:image"]').getAttribute('content')).toContain('social-preview.png')
   expect(await page.locator('meta[name="twitter:card"]').getAttribute('content')).toBe('summary_large_image')
-  expect(await page.locator('meta[name="google-site-verification"]').getAttribute('content')).toBe('REPLACE_WITH_SEARCH_CONSOLE_VERIFICATION_TOKEN')
 
   const manifestResponse = await page.request.get(`${baseURL}/manifest.webmanifest`)
   expect(manifestResponse.ok()).toBe(true)
@@ -89,6 +88,9 @@ test('serves crawlable fallback content, metadata, manifest, and legal pages', a
   const sitemapText = await sitemap.text()
   expect(sitemapText.match(/<loc>/g)).toHaveLength(1)
   expect(sitemapText).toContain('<loc>https://positivemindwithjonathan.vercel.app/</loc>')
+  const verification = await page.request.get(`${baseURL}/googled15d505e0544c7ac.html`)
+  expect(verification.ok()).toBe(true)
+  expect((await verification.text()).trim()).toBe('google-site-verification: googled15d505e0544c7ac.html')
   await page.goto('/privacy.html')
   await expect(page.getByRole('heading', { name: 'Privacy' })).toBeVisible()
   await page.goto('/terms.html')
