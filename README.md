@@ -31,21 +31,17 @@ npx --yes lighthouse@11.7.1 http://127.0.0.1:4173/ --only-categories=pwa,accessi
 
 ## Vercel deployment
 
-The Vercel SPA fallback and security/cache headers are in [`vercel.json`](./vercel.json). The current config is for a Vercel project served from its domain root. Import this repository into Vercel, keep the Vite defaults (`npm run build`, output directory `dist`), and deploy.
+The Vercel SPA fallback and security/cache headers are in [`vercel.json`](./vercel.json). The current site is `https://positivemindwithjonathan.vercel.app/` at the domain root. The default Vite base is `/`. Import this repository into Vercel, keep the Vite defaults (`npm run build`, output directory `dist`), and deploy.
 
-**Before deploying, replace the URL placeholders with the actual public HTTPS URL.** This project intentionally does not use `http://localhost:5173/` or an invented domain:
+If you later move the app under a subfolder, set the Vercel build environment variable `VITE_BASE_PATH` to its exact path, including leading and trailing slashes (for example, `/your-app/`), update the URLs in [`index.html`](./index.html), [`public/robots.txt`](./public/robots.txt), and [`public/sitemap.xml`](./public/sitemap.xml), and add the matching prefix rewrites in [`vercel.json`](./vercel.json).
 
-- In [`index.html`](./index.html), replace every `https://REPLACE_WITH_PUBLIC_HTTPS_URL/` value (canonical URL, Open Graph/Twitter image and URL, and JSON-LD URL) with the actual URL. Include the subfolder path if the app will not be at the domain root.
-- In [`public/robots.txt`](./public/robots.txt) and [`public/sitemap.xml`](./public/sitemap.xml), replace the same token with the actual site origin/path. Keep the sitemap to the root public page.
-- If the app is deployed under a subfolder, set the Vercel build environment variable `VITE_BASE_PATH` to its exact path, including leading and trailing slashes (for example, `/your-app/`). Update the Vercel rewrites in [`vercel.json`](./vercel.json) to serve that prefix and its static assets from the Vite output. The subfolder name was not provided, so this repository cannot yet contain that exact rewrite.
-
-Vercel provisions HTTPS for a connected domain. After deployment, open the exact public URL in a browser and confirm the address starts with `https://`, the certificate is valid, and `https://YOUR_PUBLIC_URL/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest`, and `/privacy.html` return successfully. The security headers are configured in `vercel.json`; `index.html` and `sw.js` are not long-term cached, while hashed `/assets/` files may be cached immutably.
+Vercel provisions HTTPS for its deployment URL and connected domains. Confirm the certificate is valid, and check that `https://positivemindwithjonathan.vercel.app/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest`, and `/privacy.html` return successfully. The security headers are configured in `vercel.json`; `index.html` and `sw.js` are not long-term cached, while hashed `/assets/` files may be cached immutably.
 
 ## Google Search Console
 
-1. In Search Console, add a **URL-prefix property** matching the exact deployed HTTPS URL (including the subfolder if present). A Domain property is an alternative, but requires DNS verification instead.
+1. In Search Console, add a **URL-prefix property** for `https://positivemindwithjonathan.vercel.app/`. A Domain property is an alternative, but requires DNS verification instead.
 2. For URL-prefix verification, copy the token from the HTML-tag method and replace `REPLACE_WITH_SEARCH_CONSOLE_VERIFICATION_TOKEN` in the `google-site-verification` meta tag in [`index.html`](./index.html). Deploy, then use Search Console's **Verify** action.
-3. Submit `https://YOUR_PUBLIC_URL/sitemap.xml` under **Sitemaps** (use the real deployed URL, not this placeholder).
+3. Submit `https://positivemindwithjonathan.vercel.app/sitemap.xml` under **Sitemaps**.
 4. In **URL Inspection**, enter the root URL, run **Test live URL**, then choose **Request indexing**.
 
 Google is intended to index the one public root page described by the sitemap. The app's hash-based practice routes are not separate crawlable pages. Private journal entries and drafts stay on the device and are never published. The linked static privacy and terms pages are public and could also be discovered by crawlers; the sitemap intentionally lists only the root page.

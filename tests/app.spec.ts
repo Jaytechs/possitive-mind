@@ -45,9 +45,9 @@ test('serves crawlable fallback content, metadata, manifest, and legal pages', a
   expect(manifest).toMatchObject({
     name: 'Positive Mind',
     short_name: 'Positive Mind',
-    id: './',
-    start_url: './',
-    scope: './',
+    id: '/',
+    start_url: '/',
+    scope: '/',
     display: 'standalone',
     orientation: 'portrait',
     background_color: '#F7F6F1',
@@ -60,7 +60,7 @@ test('serves crawlable fallback content, metadata, manifest, and legal pages', a
   expect(manifest.icons.map(icon => icon.sizes)).toEqual(['192x192', '512x512', '512x512'])
   expect(manifest.icons[2].purpose).toBe('maskable')
   expect(manifest.shortcuts.map(shortcut => shortcut.name)).toEqual(['Perspective Shift', 'Evening reflection'])
-  expect(manifest.shortcuts.map(shortcut => shortcut.url)).toEqual(['./#/shift', './#/evening'])
+  expect(manifest.shortcuts.map(shortcut => shortcut.url)).toEqual(['/#/shift', '/#/evening'])
   expect(manifest.screenshots).toHaveLength(2)
   for (const [index, screenshot] of manifest.screenshots.entries()) {
     const url = new URL(screenshot.src, `${baseURL}/manifest.webmanifest`)
@@ -88,7 +88,7 @@ test('serves crawlable fallback content, metadata, manifest, and legal pages', a
   const sitemap = await page.request.get(`${baseURL}/sitemap.xml`)
   const sitemapText = await sitemap.text()
   expect(sitemapText.match(/<loc>/g)).toHaveLength(1)
-  expect(sitemapText).toContain('<loc>https://REPLACE_WITH_PUBLIC_HTTPS_URL/</loc>')
+  expect(sitemapText).toContain('<loc>https://positivemindwithjonathan.vercel.app/</loc>')
   await page.goto('/privacy.html')
   await expect(page.getByRole('heading', { name: 'Privacy' })).toBeVisible()
   await page.goto('/terms.html')
